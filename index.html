@@ -1,0 +1,1887 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTS EU Team Vacation Calendar</title>
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+// Your Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCV_QjaEghVysOjNVApbo6_eyIclEKItBE",
+  authDomain: "arts-eu-vacation-calendar.firebaseapp.com",
+  databaseURL: "https://arts-eu-vacation-calendar-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "arts-eu-vacation-calendar",
+  storageBucket: "arts-eu-vacation-calendar.firebasestorage.app",
+  messagingSenderId: "531028738404",
+  appId: "1:531028738404:web:5366ec2b408b0d7e863a71"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const auth = firebase.auth();
+</script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    max-width: 400px;
+    width: 90%;
+}
+
+.login-box h2 {
+    color: #667eea;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.login-box .form-group {
+    margin-bottom: 20px;
+}
+
+.login-box .btn {
+    width: 100%;
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.user-info span {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.btn-logout {
+    background: #ff4757;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-logout:hover {
+    background: #ff3838;
+}
+
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
+}
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .calendar-section {
+            margin-top: 30px;
+        }
+
+        .calendar-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .vacation-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .vacation-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .vacation-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .vacation-info {
+            flex: 1;
+        }
+
+        .vacation-name {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .vacation-dates {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        .vacation-duration {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .role-badge.tse {
+            background: #667eea;
+            color: white;
+        }
+
+        .role-badge.pse {
+            background: #f39c12;
+            color: white;
+        }
+
+        .role-badge.manager {
+            background: #e74c3c;
+            color: white;
+        }
+        .leave-type-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 0.8em;
+    font-weight: 600;
+    margin-left: 8px;
+    color: white;
+}
+
+.leave-type-badge.annual {
+    background: #4ecdc4;
+}
+
+.leave-type-badge.sick {
+    background: #ff6b6b;
+}
+
+.leave-type-badge.comp-off {
+    background: #eaf604;
+    color: #333;
+}
+
+.leave-type-badge.paternal {
+    background: #3498db;
+}
+
+.leave-type-badge.maternity {
+    background: #cd05c6;
+}
+
+.leave-type-badge.bereavement {
+    background: #34495e;
+}
+
+.leave-type-badge.other {
+    background: #95a5a6;
+}
+
+.vacation-indicator.annual {
+    background: #4ecdc4;
+}
+
+.vacation-indicator.sick {
+    background: #ff6b6b;
+}
+
+.vacation-indicator.comp-off {
+    background: #eaf604;
+    color: #333;
+}
+
+.vacation-indicator.paternal {
+    background: #3498db;
+}
+
+.vacation-indicator.maternity {
+    background: #cd05c6;
+}
+
+.vacation-indicator.bereavement {
+    background: #34495e;
+}
+
+.vacation-indicator.other {
+    background: #95a5a6;
+}
+
+        .btn-delete {
+            background: #ff4757;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #ff3838;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .calendar-view {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .calendar-header h3 {
+            font-size: 1.8em;
+            color: #333;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-nav button {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .calendar-nav button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 700;
+            color: #667eea;
+            padding: 10px;
+            font-size: 0.9em;
+        }
+
+        .calendar-day {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            min-height: 100px;
+            padding: 8px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .calendar-day:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+
+        .calendar-day.today {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .day-number {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .calendar-day.today .day-number {
+            color: #667eea;
+        }
+
+        .vacation-indicator {
+            color: white;
+            font-size: 0.75em;
+            padding: 3px 6px;
+            border-radius: 4px;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .vacation-indicator.tse {
+            background: #667eea;
+        }
+
+        .vacation-indicator.pse {
+            background: #f39c12;
+        }
+
+        .vacation-indicator.manager {
+            background: #e74c3c;
+        }
+        .download-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .download-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .calendar-legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        .collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.collapsible-header:hover {
+    background: #f8f9fa;
+}
+
+.toggle-icon {
+    font-size: 1.2em;
+    transition: transform 0.3s;
+    color: #667eea;
+}
+
+.toggle-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.collapsible-content {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 1;
+}
+
+.collapsible-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+.changelog-section {
+    margin-top: 30px;
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    border: 1px solid #e0e0e0;
+}
+
+.changelog-item {
+    padding: 15px;
+    border-left: 4px solid #667eea;
+    background: #f8f9fa;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.changelog-item.delete {
+    border-left-color: #ff4757;
+}
+
+.changelog-action {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.changelog-action.add {
+    color: #667eea;
+}
+
+.changelog-action.delete {
+    color: #ff4757;
+}
+
+.changelog-details {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.changelog-timestamp {
+    font-size: 0.85em;
+    color: #999;
+    font-style: italic;
+}
+.notes-section {
+    margin-top: 30px;
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    border: 1px solid #e0e0e0;
+}
+
+.editor-toolbar {
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px 8px 0 0;
+    flex-wrap: wrap;
+}
+
+.editor-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.editor-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.editor-btn:active {
+    transform: scale(0.95);
+}
+
+.editor-content {
+    min-height: 300px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background: white;
+    outline: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.editor-content:focus {
+    border-color: #667eea;
+}
+
+.editor-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+}
+
+.editor-content table td,
+.editor-content table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.editor-content table th {
+    background: #667eea;
+    color: white;
+    font-weight: 600;
+}
+
+.editor-content ul,
+.editor-content ol {
+    margin: 10px 0;
+    padding-left: 30px;
+}
+
+.editor-content h1,
+.editor-content h2,
+.editor-content h3 {
+    margin: 15px 0 10px 0;
+    color: #333;
+}
+
+.save-indicator {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 5px 10px;
+    background: #4ecdc4;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.85em;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.save-indicator.show {
+    opacity: 1;
+}
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .vacation-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .btn-delete {
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            .calendar-grid {
+                gap: 5px;
+            }
+
+            .calendar-day {
+                min-height: 80px;
+                padding: 5px;
+            }
+
+            .vacation-indicator {
+                font-size: 0.65em;
+                padding: 2px 4px;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+        }
+    </style>
+    <script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getDatabase, ref, set, push, remove, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+  const firebaseConfig = {
+  apiKey: "AIzaSyCV_QjaEghVysOjNVApbo6_eyIclEKItBE",
+  authDomain: "arts-eu-vacation-calendar.firebaseapp.com",
+  databaseURL: "https://arts-eu-vacation-calendar-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "arts-eu-vacation-calendar",
+  storageBucket: "arts-eu-vacation-calendar.firebasestorage.app",
+  messagingSenderId: "531028738404",
+  appId: "1:531028738404:web:5366ec2b408b0d7e863a71"
+};
+
+  const app = initializeApp(firebaseConfig);
+  window.db = getDatabase(app);
+  window.dbRef = ref;
+  window.dbSet = set;
+  window.dbPush = push;
+  window.dbRemove = remove;
+  window.dbOnValue = onValue;
+  window.dbGet = get;
+</script>
+
+</head>
+<body>
+    <div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+        <h2>🏖️ ARTS EU Team Vacation Calendar</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Please enter your Amazon alias to continue</p>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="userAlias">Amazon Alias</label>
+                <input type="text" id="userAlias" placeholder="Enter your alias without '@'" required>
+            </div>
+            <button type="submit" class="btn">Login</button>
+        </form>
+    </div>
+</div>
+
+    <div class="container">
+        <div class="user-info" id="userInfo" style="display: none;">
+    <span>Logged in as: <strong id="currentUser"></strong></span>
+    <button class="btn-logout" onclick="calendar.logout()">Logout</button>
+</div>
+        <div class="header">
+            <h1>🏖️ ARTS EU Team Vacation Calendar</h1>
+            <p>Track and manage team vacations</p>
+        </div>
+
+        <div class="content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalVacations">0</div>
+                    <div class="stat-label">Total Vacations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDays">0</div>
+                    <div class="stat-label">Total Days Off</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="currentlyOff">0</div>
+                    <div class="stat-label">Currently Off</div>
+                </div>
+            </div>
+            <div class="tabs">
+                <button class="tab active" onclick="calendar.switchTab('list')">📋 Home</button>
+                <button class="tab" onclick="calendar.switchTab('tse')">📅 TSE Calendar</button>
+                <button class="tab" onclick="calendar.switchTab('pse')">📅 PSE Calendar</button>
+                <button class="tab" onclick="calendar.switchTab('manager')">📅 Manager Calendar</button>
+            </div>
+
+            <div id="listView" class="tab-content active">
+                <div class="form-section">
+                    <h2>➕ Add New Vacation</h2>
+                    <form id="vacationForm">
+                        <div class="form-group">
+                            <label for="memberName">Team Member Name</label>
+                            <input type="text" id="memberName" placeholder="Enter name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="memberRole">Role</label>
+                            <select id="memberRole" required>
+                                <option value="">Select role</option>
+                                <option value="tse">TSE</option>
+                                <option value="pse">PSE</option>
+                                <option value="manager">Manager</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+    <label for="leaveType">Leave Type</label>
+    <select id="leaveType" required>
+        <option value="">Select leave type</option>
+        <option value="annual">Annual Leave</option>
+        <option value="sick">Sick Leave</option>
+        <option value="comp-off">Comp-Off</option>
+        <option value="paternal">Paternal Leave</option>
+        <option value="maternity">Maternity Leave</option>
+        <option value="bereavement">Bereavement Leave</option>
+        <option value="other">Other</option>
+    </select>
+</div>
+                        <div class="form-row">
+    <div class="form-group">
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate" required>
+    </div>
+    <div class="form-group">
+        <label for="endDate">End Date</label>
+        <input type="date" id="endDate" required>
+    </div>
+</div>
+                        <button type="submit" class="btn">Add Vacation</button>
+                    </form>
+                </div>
+                 <div class="download-section">
+                <h2>📥 Download Vacation Data</h2>
+                <div class="form-row">
+    <div class="form-group">
+        <label for="download-start">Start Date</label>
+        <input type="date" id="download-start">
+    </div>
+    <div class="form-group">
+        <label for="download-end">End Date</label>
+        <input type="date" id="download-end">
+    </div>
+</div>
+<div class="form-group">
+    <label for="download-role">Role</label>
+    <select id="download-role">
+        <option value="all">All Roles</option>
+        <option value="tse">TSE</option>
+        <option value="pse">PSE</option>
+        <option value="manager">Manager</option>
+    </select>
+</div>
+                <button class="btn btn-success" onclick="downloadData()">Download CSV</button>                
+            </div>
+
+                <div class="calendar-section">
+    <div class="collapsible-header" onclick="calendar.toggleVacationList()">
+        <h2>📅 Current Vacation Schedule</h2>
+        <span class="toggle-icon" id="vacationToggleIcon">▼</span>
+    </div>
+    <div id="vacationListContainer" class="collapsible-content">
+        <div id="vacationList" class="vacation-list">
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <h3>No vacations scheduled yet</h3>
+                <p>Add your first vacation using the form above</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="notes-section">
+    <div class="collapsible-header" onclick="calendar.toggleNotes()">
+        <h2>📝 Notes & Documentation</h2>
+        <span class="toggle-icon" id="notesToggleIcon">▼</span>
+    </div>
+    <div id="notesContainer" class="collapsible-content">
+        <div class="editor-toolbar">
+            <button class="editor-btn" onclick="calendar.formatText('bold')" title="Bold"><b>B</b></button>
+            <button class="editor-btn" onclick="calendar.formatText('italic')" title="Italic"><i>I</i></button>
+            <button class="editor-btn" onclick="calendar.formatText('underline')" title="Underline"><u>U</u></button>
+            <button class="editor-btn" onclick="calendar.formatText('strikeThrough')" title="Strikethrough"><s>S</s></button>
+            <span style="border-left: 1px solid #ddd; margin: 0 5px;"></span>
+            <button class="editor-btn" onclick="calendar.formatText('formatBlock', 'h1')" title="Heading 1">H1</button>
+            <button class="editor-btn" onclick="calendar.formatText('formatBlock', 'h2')" title="Heading 2">H2</button>
+            <button class="editor-btn" onclick="calendar.formatText('formatBlock', 'h3')" title="Heading 3">H3</button>
+            <button class="editor-btn" onclick="calendar.formatText('formatBlock', 'p')" title="Paragraph">P</button>
+            <span style="border-left: 1px solid #ddd; margin: 0 5px;"></span>
+            <button class="editor-btn" onclick="calendar.formatText('insertUnorderedList')" title="Bullet List">• List</button>
+            <button class="editor-btn" onclick="calendar.formatText('insertOrderedList')" title="Numbered List">1. List</button>
+            <span style="border-left: 1px solid #ddd; margin: 0 5px;"></span>
+            <button class="editor-btn" onclick="calendar.insertTable()" title="Insert Table">📊 Table</button>
+            <button class="editor-btn" onclick="calendar.formatText('justifyLeft')" title="Align Left">⬅</button>
+            <button class="editor-btn" onclick="calendar.formatText('justifyCenter')" title="Align Center">↔</button>
+            <button class="editor-btn" onclick="calendar.formatText('justifyRight')" title="Align Right">➡</button>
+            <span style="border-left: 1px solid #ddd; margin: 0 5px;"></span>
+            <button class="editor-btn" onclick="calendar.clearNotes()" title="Clear All">🗑️ Clear</button>
+        </div>
+        <div id="editorContent" class="editor-content" contenteditable="true"
+             oninput="calendar.saveNotes()"
+             placeholder="Start typing your notes here...">
+        </div>
+        <span id="saveIndicator" class="save-indicator">Saved ✓</span>
+    </div>
+</div>
+<div class="changelog-section">
+    <div class="collapsible-header" onclick="calendar.toggleChangeLog()">
+        <h2>📝 Change Log</h2>
+        <span class="toggle-icon" id="changelogToggleIcon">▼</span>
+    </div>
+    <div id="changelogContainer" class="collapsible-content">
+        <div class="form-section" style="margin-bottom: 20px;">
+            <h3 style="color: #667eea; font-size: 1.2em; margin-bottom: 15px;">Filter Change Logs</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="changelog-start">From Date</label>
+                    <input type="date" id="changelog-start">
+                </div>
+                <div class="form-group">
+                    <label for="changelog-end">To Date</label>
+                    <input type="date" id="changelog-end">
+                </div>
+            </div>
+            <button class="btn" onclick="calendar.filterChangeLogs()">Apply Filter</button>
+            <button class="btn" onclick="calendar.clearChangeLogFilter()" style="background: #95a5a6; margin-left: 10px;">Clear Filter</button>
+        </div>
+        <div id="changelogList">
+            <div class="empty-state">
+                <h3>No changes recorded yet</h3>
+                <p>Changes will appear here when vacations are added or removed</p>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+
+            <div id="tseView" class="tab-content">
+                <div class="calendar-view">
+                    <div class="calendar-header">
+                        <h3 id="tseMonth"></h3>
+                        <div class="calendar-nav">
+                            <button onclick="calendar.previousMonth('tse')">← Previous</button>
+                            <button onclick="calendar.today('tse')">Today</button>
+                            <button onclick="calendar.nextMonth('tse')">Next →</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="tseCalendarGrid"></div>
+                    <div class="calendar-legend">
+    <strong>Legend:</strong>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #f0f3ff; border: 2px solid #667eea;"></div>
+        <span>Today</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #4ecdc4;"></div>
+        <span>Annual Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #ff6b6b;"></div>
+        <span>Sick Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #eaf604;"></div>
+        <span>Comp-Off</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #3498db;"></div>
+        <span>Paternal</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #cd05c6;"></div>
+        <span>Maternity</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #34495e;"></div>
+        <span>Bereavement</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #95a5a6;"></div>
+        <span>Other</span>
+    </div>
+</div>
+
+                </div>
+            </div>
+
+            <div id="pseView" class="tab-content">
+                <div class="calendar-view">
+                    <div class="calendar-header">
+                        <h3 id="pseMonth"></h3>
+                        <div class="calendar-nav">
+                            <button onclick="calendar.previousMonth('pse')">← Previous</button>
+                            <button onclick="calendar.today('pse')">Today</button>
+                            <button onclick="calendar.nextMonth('pse')">Next →</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="pseCalendarGrid"></div>
+                    <div class="calendar-legend">
+    <strong>Legend:</strong>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #f0f3ff; border: 2px solid #667eea;"></div>
+        <span>Today</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #4ecdc4;"></div>
+        <span>Annual Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #ff6b6b;"></div>
+        <span>Sick Leave</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #eaf604;"></div>
+        <span>Comp-Off</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #3498db;"></div>
+        <span>Paternal</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #cd05c6;"></div>
+        <span>Maternity</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #34495e;"></div>
+        <span>Bereavement</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background: #95a5a6;"></div>
+        <span>Other</span>
+    </div>
+</div>
+
+                </div>
+            </div>
+
+            <div id="managerView" class="tab-content">
+                <div class="calendar-view">
+                    <div class="calendar-header">
+                        <h3 id="managerMonth"></h3>
+                        <div class="calendar-nav">
+                            <button onclick="calendar.previousMonth('manager')">← Previous</button>
+                            <button onclick="calendar.today('manager')">Today</button>
+                            <button onclick="calendar.nextMonth('manager')">Next →</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="managerCalendarGrid"></div>
+                    <div class="calendar-legend">
+                        <strong>Legend:</strong>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f0f3ff; border: 2px solid #667eea;"></div>
+                            <span>Today</span>
+                        </div>
+                        <div class="legend-item">
+    <div class="legend-color" style="background: #4ecdc4;"></div>
+    <span>Annual Leave</span>
+</div>
+<div class="legend-item">
+    <div class="legend-color" style="background: #ff6b6b;"></div>
+    <span>Sick Leave</span>
+</div>
+<div class="legend-item">
+    <div class="legend-color" style="background: #eaf604;"></div>
+    <span>Comp-Off</span>
+</div>
+<div class="legend-item">
+    <div class="legend-color" style="background: #3498db;"></div>
+    <span>Paternal</span>
+</div>
+<div class="legend-item">
+    <div class="legend-color" style="background: #cd05c6;"></div>
+    <span>Maternity</span>
+</div>
+<div class="legend-item">
+    <div class="legend-color" style="background: #34495e;"></div>
+    <span>Bereavement</span>
+</div>
+<div class="legend-item">
+    <div class="legend-color" style="background: #95a5a6;"></div>
+    <span>Other</span>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+  apiKey: "AIzaSyCV_QjaEghVysOjNVApbo6_eyIclEKItBE",
+  authDomain: "arts-eu-vacation-calendar.firebaseapp.com",
+  databaseURL: "https://arts-eu-vacation-calendar-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "arts-eu-vacation-calendar",
+  storageBucket: "arts-eu-vacation-calendar.firebasestorage.app",
+  messagingSenderId: "531028738404",
+  appId: "1:531028738404:web:5366ec2b408b0d7e863a71"
+};
+        class VacationCalendar {
+            constructor() {
+    this.currentUser = this.checkLogin();
+    if (!this.currentUser) {
+        this.showLogin();
+        return;
+    }
+
+    this.vacations = this.loadVacations();
+    this.changeLogs = this.loadChangeLogs();
+    this.form = document.getElementById('vacationForm');
+    this.vacationList = document.getElementById('vacationList');
+    this.currentDates = {
+        tse: new Date(),
+        pse: new Date(),
+        manager: new Date()
+    };
+    this.activeTab = 'list';
+
+    this.hideLogin();
+    this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+    this.render();
+    this.updateStats();
+    this.renderChangeLog();
+    this.renderNotes();
+}
+            loadChangeLogs() {
+    // Return empty array initially, data will be loaded via Firebase listener
+    return [];
+}
+checkLogin() {
+    // Check if user is authenticated with Firebase
+    const user = firebase.auth().currentUser;
+    return user ? user.email.split('@') : null;
+}
+filterChangeLogs() {
+    const startDate = document.getElementById('changelog-start').value;
+    const endDate = document.getElementById('changelog-end').value;
+
+    if (!startDate && !endDate) {
+        alert('Please select at least one date to filter');
+        return;
+    }
+
+    this.renderChangeLog(startDate, endDate);
+}
+
+clearChangeLogFilter() {
+    document.getElementById('changelog-start').value = '';
+    document.getElementById('changelog-end').value = '';
+    this.renderChangeLog();
+}
+showLogin() {
+    const allowedAliases = ['babinbe', 'sonufer', 'patksh'];
+
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const alias = document.getElementById('userAlias').value.trim().toLowerCase();
+
+        if (!allowedAliases.includes(alias)) {
+            alert('Please check your alias and ensure you are part of ARTS EU team');
+            return;
+        }
+
+        try {
+            // Sign in with Firebase (using alias as email)
+            await firebase.auth().signInWithEmailAndPassword(
+                `${alias}@amazon.com`,
+                '[PASSWORD]' // Replace with your team password
+            );
+
+            //localStorage.setItem('currentUser', alias);
+            this.currentUser = alias;
+            this.hideLogin();
+            this.init();
+        } catch (error) {
+            alert('Login failed. Please contact your team admin.');
+            console.error(error);
+        }
+    });
+}
+
+hideLogin() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('userInfo').style.display = 'flex';
+    document.getElementById('currentUser').textContent = this.currentUser;
+}
+
+init() {
+    this.vacations = this.loadVacations();
+    this.changeLogs = this.loadChangeLogs();
+    this.form = document.getElementById('vacationForm');
+    this.vacationList = document.getElementById('vacationList');
+    this.currentDates = {
+        tse: new Date(),
+        pse: new Date(),
+        manager: new Date()
+    };
+    this.activeTab = 'list';
+    this.setupFirebaseListeners();
+
+    this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+    this.render();
+    this.updateStats();
+    this.renderChangeLog();
+    this.renderNotes();
+}
+
+logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        firebase.auth().signOut().then(() => {
+            location.reload();
+        }).catch((error) => {
+            console.error('Logout error:', error);
+            alert('Logout failed. Please try again.');
+        });
+    }
+}
+saveChangeLogs() {
+    if (this.changeLogs.length > 100) {
+        this.changeLogs = this.changeLogs.slice(-100);
+    }
+    const logsObj = {};
+    this.changeLogs.forEach(log => {
+        logsObj[log.id] = log;
+    });
+    database.ref('changeLogs').set(logsObj);
+}
+
+addChangeLog(action, vacation) {
+    const timestamp = new Date();
+    const log = {
+        id: Date.now(),
+        action: action,
+        name: vacation.name,
+        role: vacation.role,
+        leaveType: vacation.leaveType,
+        startDate: vacation.startDate,
+        endDate: vacation.endDate,
+        timestamp: timestamp.toISOString(),
+        modifiedBy: this.currentUser
+    };
+    this.changeLogs.push(log);
+    this.saveChangeLogs();
+    this.renderChangeLog();
+}
+
+formatTimestamp(isoString) {
+    const date = new Date(isoString);
+    const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    };
+    return date.toLocaleString('en-US', options);
+}
+
+renderChangeLog(filterStartDate = null, filterEndDate = null) {
+    const changelogList = document.getElementById('changelogList');
+
+    if (this.changeLogs.length === 0) {
+        changelogList.innerHTML = `
+            <div class="empty-state">
+                <h3>No changes recorded yet</h3>
+                <p>Changes will appear here when vacations are added or removed</p>
+            </div>
+        `;
+        return;
+    }
+
+    let filteredLogs = [...this.changeLogs];
+
+    // Apply date filters if provided
+    if (filterStartDate || filterEndDate) {
+        filteredLogs = filteredLogs.filter(log => {
+            const logDate = new Date(log.timestamp);
+            logDate.setHours(0, 0, 0, 0);
+
+            if (filterStartDate && filterEndDate) {
+                const start = new Date(filterStartDate);
+                const end = new Date(filterEndDate);
+                return logDate >= start && logDate <= end;
+            } else if (filterStartDate) {
+                const start = new Date(filterStartDate);
+                return logDate >= start;
+            } else if (filterEndDate) {
+                const end = new Date(filterEndDate);
+                return logDate <= end;
+            }
+            return true;
+        });
+    }
+
+    if (filteredLogs.length === 0) {
+        changelogList.innerHTML = `
+            <div class="empty-state">
+                <h3>No changes found for the selected date range</h3>
+                <p>Try adjusting your filter dates</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Show most recent first
+    const sortedLogs = filteredLogs.reverse();
+
+    changelogList.innerHTML = sortedLogs.map(log => {
+        const actionText = log.action === 'add' ? 'Added' : 'Removed';
+        const actionClass = log.action === 'add' ? 'add' : 'delete';
+        const days = this.calculateDays(log.startDate, log.endDate);
+
+        return `
+            <div class="changelog-item ${actionClass}">
+                <div class="changelog-action ${actionClass}">
+                    ${actionText} vacation for ${log.name}
+                </div>
+                <div class="changelog-details">
+                    Role: ${log.role.toUpperCase()} |
+                    Leave Type: ${this.getLeaveTypeLabel(log.leaveType || 'annual')} |
+                    ${this.formatDate(log.startDate)} → ${this.formatDate(log.endDate)}
+                    (${days} day${days !== 1 ? 's' : ''})
+                </div>
+                <div class="changelog-timestamp">
+                    ${this.formatTimestamp(log.timestamp)} • Modified by: ${log.modifiedBy || 'Unknown'}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+toggleChangeLog() {
+    const container = document.getElementById('changelogContainer');
+    const icon = document.getElementById('changelogToggleIcon');
+
+    container.classList.toggle('collapsed');
+    icon.classList.toggle('collapsed');
+}
+loadNotes() {
+    // Return empty string initially, data will be loaded via Firebase listener
+    return '';
+}
+
+saveNotes() {
+    const content = document.getElementById('editorContent').innerHTML;
+    database.ref('notes').set(content);
+    this.showSaveIndicator();
+}
+
+showSaveIndicator() {
+    const indicator = document.getElementById('saveIndicator');
+    indicator.classList.add('show');
+    setTimeout(() => {
+        indicator.classList.remove('show');
+    }, 2000);
+}
+
+formatText(command, value = null) {
+    document.execCommand(command, false, value);
+    document.getElementById('editorContent').focus();
+}
+
+insertTable() {
+    const rows = prompt('Number of rows:', '3');
+    const cols = prompt('Number of columns:', '3');
+
+    if (rows && cols && rows > 0 && cols > 0) {
+        let tableHTML = '<table><thead><tr>';
+
+        // Create header row
+        for (let i = 0; i < cols; i++) {
+            tableHTML += '<th>Header ' + (i + 1) + '</th>';
+        }
+        tableHTML += '</tr></thead><tbody>';
+
+        // Create data rows
+        for (let i = 0; i < rows - 1; i++) {
+            tableHTML += '<tr>';
+            for (let j = 0; j < cols; j++) {
+                tableHTML += '<td>Cell</td>';
+            }
+            tableHTML += '</tr>';
+        }
+        tableHTML += '</tbody></table><p><br></p>';
+
+        document.execCommand('insertHTML', false, tableHTML);
+        this.saveNotes();
+    }
+}
+
+clearNotes() {
+    if (confirm('Are you sure you want to clear all notes? This cannot be undone.')) {
+        document.getElementById('editorContent').innerHTML = '';
+        this.saveNotes();
+    }
+}
+
+toggleNotes() {
+    const container = document.getElementById('notesContainer');
+    const icon = document.getElementById('notesToggleIcon');
+
+    container.classList.toggle('collapsed');
+    icon.classList.toggle('collapsed');
+}
+
+renderNotes() {
+    const content = this.loadNotes();
+    document.getElementById('editorContent').innerHTML = content;
+}
+            loadVacations() {
+    // Return empty array initially, data will be loaded via Firebase listener
+    return [];
+}
+
+setupFirebaseListeners() {
+    // Listen for vacation changes
+    database.ref('vacations').on('value', (snapshot) => {
+        const data = snapshot.val();
+        this.vacations = data ? Object.values(data) : [];
+        this.vacations.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        this.render();
+        this.updateStats();
+        if (this.activeTab !== 'list') {
+            this.renderCalendar(this.activeTab);
+        }
+    });
+
+    // Listen for changelog changes
+    database.ref('changeLogs').on('value', (snapshot) => {
+        const data = snapshot.val();
+        this.changeLogs = data ? Object.values(data) : [];
+        this.renderChangeLog();
+    });
+
+    // Listen for notes changes
+    database.ref('notes').on('value', (snapshot) => {
+        const notes = snapshot.val() || '';
+        if (document.getElementById('editorContent').innerHTML !== notes) {
+            document.getElementById('editorContent').innerHTML = notes;
+        }
+    });
+}
+
+           saveVacations() {
+    const vacationsObj = {};
+    this.vacations.forEach(v => {
+        vacationsObj[v.id] = v;
+    });
+    database.ref('vacations').set(vacationsObj);
+}
+            handleSubmit(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('memberName').value.trim();
+    const role = document.getElementById('memberRole').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    if (new Date(startDate) > new Date(endDate)) {
+        alert('End date must be after start date!');
+        return;
+    }
+
+    // Check for overlapping vacation dates for the same member and role
+    const hasOverlap = this.vacations.some(v => {
+        if (v.name.toLowerCase() !== name.toLowerCase() || v.role !== role) {
+            return false;
+        }
+
+        const existingStart = new Date(v.startDate);
+        const existingEnd = new Date(v.endDate);
+        const newStart = new Date(startDate);
+        const newEnd = new Date(endDate);
+
+        // Check if dates overlap
+        return (newStart <= existingEnd && newEnd >= existingStart);
+    });
+
+    if (hasOverlap) {
+        // Find the overlapping vacation to show details
+        const overlappingVacation = this.vacations.find(v => {
+            if (v.name.toLowerCase() !== name.toLowerCase() || v.role !== role) {
+                return false;
+            }
+            const existingStart = new Date(v.startDate);
+            const existingEnd = new Date(v.endDate);
+            const newStart = new Date(startDate);
+            const newEnd = new Date(endDate);
+            return (newStart <= existingEnd && newEnd >= existingStart);
+        });
+
+        alert(`${name} already has a vacation marked from ${this.formatDate(overlappingVacation.startDate)} to ${this.formatDate(overlappingVacation.endDate)}. Please remove or modify the existing vacation first.`);
+        return;
+    }
+
+    const leaveType = document.getElementById('leaveType').value;
+
+const vacation = {
+    id: Date.now(),
+    name: name,
+    role: role,
+    leaveType: leaveType,
+    startDate: startDate,
+    endDate: endDate
+};
+    this.vacations.push(vacation);
+    this.addChangeLog('add', vacation);
+    this.vacations.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    this.saveVacations();
+    this.render();
+    this.updateStats();
+    this.renderCalendar('tse');
+    this.renderCalendar('pse');
+    this.renderCalendar('manager');
+    this.form.reset();
+}
+
+            deleteVacation(id) {
+                if (confirm('Are you sure you want to remove this vacation?')) {
+                    const vacationToDelete = this.vacations.find(v => v.id === id);
+                    if (vacationToDelete) {
+                        this.addChangeLog('delete', vacationToDelete);
+                    }
+                    this.vacations = this.vacations.filter(v => v.id !== id);
+                    this.saveVacations();
+                    this.render();
+                    this.updateStats();
+                    this.renderCalendar('tse');
+                    this.renderCalendar('pse');
+                    this.renderCalendar('manager');
+                }
+            }
+
+            calculateDays(startDate, endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                return diffDays;
+            }
+
+            formatDate(dateString) {
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString('en-US', options);
+            }
+getLeaveTypeLabel(leaveType) {
+    const labels = {
+        'annual': 'Annual Leave',
+        'sick': 'Sick Leave',
+        'comp-off': 'Comp-Off',
+        'paternal': 'Paternal Leave',
+        'maternity': 'Maternity Leave',
+        'bereavement': 'Bereavement Leave',
+        'other': 'Other'
+    };
+    return labels[leaveType] || leaveType;
+}
+
+            isCurrentlyOff(startDate, endDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                return today >= start && today <= end;
+            }
+
+            updateStats() {
+                const totalVacations = this.vacations.length;
+                const totalDays = this.vacations.reduce((sum, v) => 
+                    sum + this.calculateDays(v.startDate, v.endDate), 0);
+                const currentlyOff = this.vacations.filter(v => 
+                    this.isCurrentlyOff(v.startDate, v.endDate)).length;
+
+                document.getElementById('totalVacations').textContent = totalVacations;
+                document.getElementById('totalDays').textContent = totalDays;
+                document.getElementById('currentlyOff').textContent = currentlyOff;
+            }
+
+            render() {
+                if (this.vacations.length === 0) {
+                    this.vacationList.innerHTML = `
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <h3>No vacations scheduled yet</h3>
+                            <p>Add your first vacation using the form above</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.vacationList.innerHTML = this.vacations.map(vacation => {
+                    const days = this.calculateDays(vacation.startDate, vacation.endDate);
+                    const isOff = this.isCurrentlyOff(vacation.startDate, vacation.endDate);
+                    const statusBadge = isOff ? ' 🟢 Currently Off' : '';
+                    const roleLabel = vacation.role.toUpperCase();
+                    
+                    return `
+    <div class="vacation-item">
+        <div class="vacation-info">
+            <div class="vacation-name">
+                ${vacation.name}
+                <span class="role-badge ${vacation.role}">${roleLabel}</span>
+                <span class="leave-type-badge ${vacation.leaveType}">${this.getLeaveTypeLabel(vacation.leaveType)}</span>
+                ${statusBadge}
+            </div>
+            <div class="vacation-dates">
+                ${this.formatDate(vacation.startDate)} → ${this.formatDate(vacation.endDate)}
+            </div>
+            <div class="vacation-duration">
+                ${days} day${days !== 1 ? 's' : ''}
+            </div>
+        </div>
+        <button class="btn-delete" onclick="calendar.deleteVacation(${vacation.id})">
+            Remove
+        </button>
+    </div>
+`;
+                }).join('');
+            }
+
+            switchTab(tab) {
+                this.activeTab = tab;
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                if (tab === 'list') {
+                    document.querySelector('.tab:nth-child(1)').classList.add('active');
+                    document.getElementById('listView').classList.add('active');
+                } else if (tab === 'tse') {
+                    document.querySelector('.tab:nth-child(2)').classList.add('active');
+                    document.getElementById('tseView').classList.add('active');
+                    this.renderCalendar('tse');
+                } else if (tab === 'pse') {
+                    document.querySelector('.tab:nth-child(3)').classList.add('active');
+                    document.getElementById('pseView').classList.add('active');
+                    this.renderCalendar('pse');
+                } else if (tab === 'manager') {
+                    document.querySelector('.tab:nth-child(4)').classList.add('active');
+                    document.getElementById('managerView').classList.add('active');
+                    this.renderCalendar('manager');
+                }
+            }
+
+            renderCalendar(role) {
+                const currentDate = this.currentDates[role];
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+                
+                document.getElementById(`${role}Month`).textContent = `${monthNames[month]} ${year}`;
+                
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const startingDayOfWeek = firstDay.getDay();
+                const daysInMonth = lastDay.getDate();
+                
+                const prevMonthLastDay = new Date(year, month, 0).getDate();
+                
+                let calendarHTML = '';
+                
+                const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                dayHeaders.forEach(day => {
+                    calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+                });
+                
+                for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                    const day = prevMonthLastDay - i;
+                    calendarHTML += `<div class="calendar-day other-month"><div class="day-number">${day}</div></div>`;
+                }
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const currentDay = new Date(year, month, day);
+                    const isToday = currentDay.getTime() === today.getTime();
+                    
+                    const vacationsOnDay = this.getVacationsForDate(currentDay, role);
+                    
+                    let dayClass = 'calendar-day';
+                    if (isToday) dayClass += ' today';
+                    
+                    let vacationHTML = '';
+                    vacationsOnDay.forEach(vacation => {
+                        const leaveLabel = this.getLeaveTypeLabel(vacation.leaveType);
+vacationHTML += `<span class="vacation-indicator ${vacation.leaveType}" title="${vacation.name} - ${leaveLabel}">${vacation.name}</span>`;
+
+                    });
+                    
+                    calendarHTML += `
+                        <div class="${dayClass}">
+                            <div class="day-number">${day}</div>
+                            ${vacationHTML}
+                        </div>
+                    `;
+                }
+                
+                const totalCells = startingDayOfWeek + daysInMonth;
+                const remainingCells = 7 - (totalCells % 7);
+                if (remainingCells < 7) {
+                    for (let i = 1; i <= remainingCells; i++) {
+                        calendarHTML += `<div class="calendar-day other-month"><div class="day-number">${i}</div></div>`;
+                    }
+                }
+                
+                document.getElementById(`${role}CalendarGrid`).innerHTML = calendarHTML;
+            }
+
+            getVacationsForDate(date, role) {
+                return this.vacations.filter(vacation => {
+                    if (vacation.role !== role) return false;
+                    const start = new Date(vacation.startDate);
+                    const end = new Date(vacation.endDate);
+                    start.setHours(0, 0, 0, 0);
+                    end.setHours(0, 0, 0, 0);
+                    return date >= start && date <= end;
+                });
+            }
+
+            previousMonth(role) {
+                this.currentDates[role].setMonth(this.currentDates[role].getMonth() - 1);
+                this.renderCalendar(role);
+            }
+
+            nextMonth(role) {
+                this.currentDates[role].setMonth(this.currentDates[role].getMonth() + 1);
+                this.renderCalendar(role);
+            }
+
+            today(role) {
+                this.currentDates[role] = new Date();
+                this.renderCalendar(role);
+            }
+            toggleVacationList() {
+        const container = document.getElementById('vacationListContainer');
+        const icon = document.getElementById('vacationToggleIcon');
+        
+        container.classList.toggle('collapsed');
+        icon.classList.toggle('collapsed');
+    }
+        }
+
+        const calendar = new VacationCalendar();
+        
+function downloadData() {
+    const startDate = document.getElementById('download-start').value;
+    const endDate = document.getElementById('download-end').value;
+    const role = document.getElementById('download-role').value;
+
+    // Access vacations from the calendar instance
+    let filteredVacations = calendar.vacations;
+
+    // Apply filters
+    if (startDate) {
+        filteredVacations = filteredVacations.filter(v => v.startDate >= startDate);
+    }
+    if (endDate) {
+        filteredVacations = filteredVacations.filter(v => v.endDate <= endDate);
+    }
+    if (role !== 'all') {
+        filteredVacations = filteredVacations.filter(v => v.role === role);
+    }
+
+    // Create CSV with proper formatting
+    const csv = [
+    ['Name', 'Role', 'Leave Type', 'Start Date', 'End Date', 'Days'],
+    ...filteredVacations.map(v => [
+        v.name,
+        v.role.toUpperCase(),
+        calendar.getLeaveTypeLabel(v.leaveType || 'annual'),
+        v.startDate,
+        v.endDate,
+        calendar.calculateDays(v.startDate, v.endDate)
+    ])
+].map(row => row.join(',')).join('\n');
+
+
+    // Create and download the file
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vacation-data-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+    </script>
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+</body>
+</html>
