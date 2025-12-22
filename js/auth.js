@@ -13,30 +13,53 @@ const Auth = {
         return localStorage.getItem('currentUser');
     },
 
-    // Login with validation
-    login(alias) {
-        if (!alias || alias.trim() === '') {
-            alert('Please enter your Amazon alias without "@" ');
-            return false;
-        }
+    // Check if user exists in Firebase
+    checkUserExists(alias, callback) {
+        database.ref('users/' + alias).once('value', (snapshot) => {
+            callback(snapshot.exists());
+        });
+    },
 
-        const trimmedAlias = alias.trim().toLowerCase();
+    // Create new user with password
+    createUser(alias, password, callback) {
+        const email = alias + '@arts-eu-vacation.internal';
 
-        // Validate against allowed aliases
-        if (!this.allowedAliases.includes(trimmedAlias)) {
-            alert('Access denied. You are not authorized to use this application. Please contact the team administrator if you need access.');
-            return false;
-        }
+        firebase.auth().createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Store user info in database
+                database.ref('users/' + alias).set({
+                    alias: alias,
+                    email: email,
+                    createdAt: new Date().toISOString()
+                }).then(() => {
+                    localStorage.setItem('currentUser', alias);
+                    callback(true, null);
+                });
+            })
+            .catch((error) => {
+                callback(false, error.message);
+            });
+    },
 
-        // Store the alias
-        localStorage.setItem('currentUser', trimmedAlias);
-        return true;
+    // Login existing user
+    loginUser(alias, password, callback) {
+        const email = alias + '@arts-eu-vacation.internal';
+
+        firebase.auth().signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                localStorage.setItem('currentUser', alias);
+                callback(true, null);
+            })
+            .catch((error) => {
+                callback(false, error.message);
+            });
     },
 
     // Logout
     logout() {
         if (confirm('Are you sure you want to logout?')) {
             localStorage.removeItem('currentUser');
+            firebase.auth().signOut();
             return true;
         }
         return false;
@@ -47,7 +70,90 @@ const Auth = {
 function login() {
     const alias = document.getElementById('aliasInput').value;
 
-    if (!Auth.login(alias)) {
+    if (!alias || alias.trim() === '') {
+        alert('Please enter your Amazon alias');
+        return;
+    }
+
+    const trimmedAlias = alias.trim().toLowerCase();
+
+    // Validate against allowed aliases
+    if (!Auth.allowedAliases.includes(trimmedAlias)) {
+        alert('Access denied. You are not authorized to use this application.
+
+Please contact the team administrator if you need access.');
+        return;
+    }
+
+    const loginBtn = document.querySelector('#loginScreen button');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Checking...';
+
+    // Check if database is ready
+    if (typeof database === 'undefined') {
+        setTimeout(() => login(), 100);
+        return;
+    }
+
+    // Check if user exists
+    Auth.checkUserExists(trimmedAlias, (exists) => {
+        if (exists) {
+            // User exists, show password login
+            showPasswordLogin(trimmedAlias);
+        } else {
+            // First time user, show password setup
+            showPasswordSetup(trimmedAlias);
+        }
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+    });
+}
+
+// Show password login form
+function showPasswordLogin(alias) {
+    const loginScreen = document.getElementById('loginScreen');
+    loginScreen.innerHTML = `
+        <h1>Welcome back, ${alias}!</h1>
+        <div class="login-form">
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="passwordInput" placeholder="Enter your password">
+            </div>
+            <button onclick="submitPassword('${alias}')" class="btn-primary">Login</button>
+            <button onclick="backToAliasInput()" class="btn-secondary" style="margin-top: 10px;">Back</button>
+        </div>
+    `;
+    document.getElementById('passwordInput').focus();
+}
+
+// Show password setup form
+function showPasswordSetup(alias) {
+    const loginScreen = document.getElementById('loginScreen');
+    loginScreen.innerHTML = `
+        <h1>Welcome, ${alias}!</h1>
+        <p>This is your first time logging in. Please set a password.</p>
+        <div class="login-form">
+            <div class="form-group">
+                <label>Create Password</label>
+                <input type="password" id="newPasswordInput" placeholder="Enter password (min 6 characters)">
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="confirmPasswordInput" placeholder="Confirm password">
+            </div>
+            <button onclick="submitNewPassword('${alias}')" class="btn-primary">Set Password & Login</button>
+            <button onclick="backToAliasInput()" class="btn-secondary" style="margin-top: 10px;">Back</button>
+        </div>
+    `;
+    document.getElementById('newPasswordInput').focus();
+}
+
+// Submit password for existing user
+function submitPassword(alias) {
+    const password = document.getElementById('passwordInput').value;
+
+    if (!password) {
+        alert('Please enter your password');
         return;
     }
 
@@ -55,63 +161,95 @@ function login() {
     loginBtn.disabled = true;
     loginBtn.textContent = 'Logging in...';
 
-    // Check if database is ready
-    if (typeof database === 'undefined') {
-        console.error('Database not initialized yet, waiting...');
-        setTimeout(() => login(), 100); // Retry after 100ms
-        return;
-    }
-
-    // Sign in anonymously to Firebase
-    firebase.auth().signInAnonymously()
-        .then(() => {
-            console.log('Firebase auth successful');
+    Auth.loginUser(alias, password, (success, error) => {
+        if (success) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             document.getElementById('currentUser').textContent = alias;
             initializeApp();
-        })
-        .catch((error) => {
-            console.error('Firebase auth error:', error);
-            alert('Authentication error: ' + error.message + '
-
-Please try again.');
-            localStorage.removeItem('currentUser');
+        } else {
+            alert('Login failed: ' + error);
             loginBtn.disabled = false;
             loginBtn.textContent = 'Login';
-        });
+        }
+    });
+}
+
+// Submit new password for first-time user
+function submitNewPassword(alias) {
+    const password = document.getElementById('newPasswordInput').value;
+    const confirmPassword = document.getElementById('confirmPasswordInput').value;
+
+    if (!password || !confirmPassword) {
+        alert('Please fill in both password fields');
+        return;
+    }
+
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+
+    const loginBtn = document.querySelector('#loginScreen button');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Creating account...';
+
+    Auth.createUser(alias, password, (success, error) => {
+        if (success) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('currentUser').textContent = alias;
+            initializeApp();
+        } else {
+            alert('Account creation failed: ' + error);
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Set Password & Login';
+        }
+    });
+}
+
+// Back to alias input
+function backToAliasInput() {
+    const loginScreen = document.getElementById('loginScreen');
+    loginScreen.innerHTML = `
+        <h1>Please enter your Amazon alias to continue</h1>
+        <div class="login-form">
+            <div class="form-group">
+                <label>Amazon Alias</label>
+                <input type="text" id="aliasInput" placeholder="Enter your alias">
+            </div>
+            <button onclick="login()" class="btn-primary">Login</button>
+        </div>
+    `;
+    document.getElementById('aliasInput').focus();
 }
 
 // Logout function
 function logout() {
     if (Auth.logout()) {
-        firebase.auth().signOut().then(() => {
-            location.reload();
-        });
+        location.reload();
     }
 }
 
 // Check authentication on page load
 window.addEventListener('DOMContentLoaded', () => {
-    // Wait for database to be initialized
     const checkDatabase = setInterval(() => {
         if (typeof database !== 'undefined') {
             clearInterval(checkDatabase);
 
-            if (Auth.isLoggedIn()) {
-                firebase.auth().signInAnonymously()
-                    .then(() => {
-                        document.getElementById('loginScreen').style.display = 'none';
-                        document.getElementById('mainApp').style.display = 'block';
-                        document.getElementById('currentUser').textContent = Auth.getCurrentUser();
-                        initializeApp();
-                    })
-                    .catch((error) => {
-                        console.error('Auto-login failed:', error);
-                        localStorage.removeItem('currentUser');
-                        location.reload();
-                    });
-            }
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user && Auth.isLoggedIn()) {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                    document.getElementById('currentUser').textContent = Auth.getCurrentUser();
+                    initializeApp();
+                }
+            });
         }
-    }, 50); // Check every 50ms
+    }, 50);
 });
