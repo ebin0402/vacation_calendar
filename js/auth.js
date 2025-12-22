@@ -354,10 +354,11 @@ window.addEventListener('DOMContentLoaded', () => {
                         document.getElementById('mainApp').style.display = 'block';
                         document.getElementById('currentUser').textContent = storedAlias;
 
-                        // Wait a bit more to ensure auth is fully ready
+                        // CRITICAL: Wait for auth token to propagate to database
                         setTimeout(() => {
+                            console.log('Loading app data...');
                             initializeApp();
-                        }, 100);
+                        }, 500); // Increased delay to 500ms
                     } else {
                         // User authenticated but no alias stored - logout
                         firebase.auth().signOut();
