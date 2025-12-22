@@ -143,13 +143,39 @@ function submitPasswordOrCreate(alias) {
     firebase.auth().fetchSignInMethodsForEmail(email)
         .then((signInMethods) => {
             console.log('Sign-in methods for', email, ':', signInMethods);
+            console.log('Sign-in methods length:', signInMethods.length);
+            console.log('User exists:', signInMethods.length > 0);
 
-            if (signInMethods.length === 0) {
-                // User doesn't exist, create new account
+            if (signInMethods && signInMethods.length > 0) {
+                // User EXISTS - try to sign in
+                console.log('User exists, attempting login');
+                loginBtn.textContent = 'Logging in...';
+
+                firebase.auth().signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        console.log('Login successful');
+                        localStorage.setItem('currentUser', alias);
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('mainApp').style.display = 'block';
+                        document.getElementById('currentUser').textContent = alias;
+                        initializeApp();
+                    })
+                    .catch((error) => {
+                        console.error('Login error:', error);
+                        alert('Incorrect password. Please try again.');
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Continue';
+                        document.getElementById('passwordInput').value = '';
+                        document.getElementById('passwordInput').focus();
+                    });
+            } else {
+                // User DOESN'T EXIST - create new account
+                console.log('User does not exist, creating account');
                 loginBtn.textContent = 'Creating account...';
 
                 firebase.auth().createUserWithEmailAndPassword(email, password)
                     .then((userCredential) => {
+                        console.log('Account created successfully');
                         // Store user info in database
                         database.ref('users/' + alias).set({
                             alias: alias,
@@ -168,27 +194,6 @@ function submitPasswordOrCreate(alias) {
                         alert('Account creation failed: ' + createError.message);
                         loginBtn.disabled = false;
                         loginBtn.textContent = 'Continue';
-                    });
-            } else {
-                // User exists, try to sign in
-                loginBtn.textContent = 'Logging in...';
-
-                firebase.auth().signInWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        // Login successful
-                        localStorage.setItem('currentUser', alias);
-                        document.getElementById('loginScreen').style.display = 'none';
-                        document.getElementById('mainApp').style.display = 'block';
-                        document.getElementById('currentUser').textContent = alias;
-                        initializeApp();
-                    })
-                    .catch((error) => {
-                        console.error('Login error:', error);
-                        alert('Incorrect password. Please try again.');
-                        loginBtn.disabled = false;
-                        loginBtn.textContent = 'Continue';
-                        document.getElementById('passwordInput').value = '';
-                        document.getElementById('passwordInput').focus();
                     });
             }
         })
