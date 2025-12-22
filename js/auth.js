@@ -135,30 +135,17 @@ function submitPasswordOrCreate(alias) {
 
     const loginBtn = document.querySelector('#loginScreen button');
     loginBtn.disabled = true;
-    loginBtn.textContent = 'Logging in...';
+    loginBtn.textContent = 'Checking...';
 
     const email = alias + '@arts-eu-vacation.internal';
 
-    // Try to sign in first
-    firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            // Login successful
-            localStorage.setItem('currentUser', alias);
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('currentUser').textContent = alias;
-            initializeApp();
-        })
-        .catch((error) => {
-            console.log('Auth error code:', error.code);
-            console.log('Auth error message:', error.message);
+    // First, check if the email exists
+    firebase.auth().fetchSignInMethodsForEmail(email)
+        .then((signInMethods) => {
+            console.log('Sign-in methods for', email, ':', signInMethods);
 
-            // If user doesn't exist, create account
-            // Firebase returns different error codes depending on the situation
-            if (error.code === 'auth/user-not-found' ||
-                error.code === 'auth/invalid-email' ||
-                error.code === 'auth/invalid-credential') {
-
+            if (signInMethods.length === 0) {
+                // User doesn't exist, create new account
                 loginBtn.textContent = 'Creating account...';
 
                 firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -177,34 +164,39 @@ function submitPasswordOrCreate(alias) {
                         });
                     })
                     .catch((createError) => {
-                        console.log('Create error code:', createError.code);
-
-                        // If account already exists, it means wrong password
-                        if (createError.code === 'auth/email-already-in-use') {
-                            alert('Incorrect password. Please try again.');
-                            loginBtn.disabled = false;
-                            loginBtn.textContent = 'Continue';
-                            document.getElementById('passwordInput').value = '';
-                            document.getElementById('passwordInput').focus();
-                        } else {
-                            alert('Account creation failed: ' + createError.message);
-                            loginBtn.disabled = false;
-                            loginBtn.textContent = 'Continue';
-                        }
+                        console.error('Account creation error:', createError);
+                        alert('Account creation failed: ' + createError.message);
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Continue';
                     });
-            } else if (error.code === 'auth/wrong-password') {
-                // Explicitly wrong password for existing user
-                alert('Incorrect password. Please try again.');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Continue';
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('passwordInput').focus();
             } else {
-                // Other authentication errors
-                alert('Authentication error: ' + error.message);
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Continue';
+                // User exists, try to sign in
+                loginBtn.textContent = 'Logging in...';
+
+                firebase.auth().signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Login successful
+                        localStorage.setItem('currentUser', alias);
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('mainApp').style.display = 'block';
+                        document.getElementById('currentUser').textContent = alias;
+                        initializeApp();
+                    })
+                    .catch((error) => {
+                        console.error('Login error:', error);
+                        alert('Incorrect password. Please try again.');
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Continue';
+                        document.getElementById('passwordInput').value = '';
+                        document.getElementById('passwordInput').focus();
+                    });
             }
+        })
+        .catch((error) => {
+            console.error('Error checking email:', error);
+            alert('Error checking account: ' + error.message);
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Continue';
         });
 }
 
