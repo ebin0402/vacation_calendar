@@ -137,6 +137,9 @@ function submitPasswordOrCreate(alias) {
     loginBtn.disabled = true;
     loginBtn.textContent = 'Logging in...';
 
+    // Set flag to prevent onAuthStateChanged from interfering
+    isLoggingIn = true;
+
     const email = alias + '@arts-eu-vacation.internal';
 
     // Always try to login first
@@ -145,6 +148,10 @@ function submitPasswordOrCreate(alias) {
             // Login successful
             console.log('Login successful');
             localStorage.setItem('currentUser', alias);
+
+            // Clear the flag
+            isLoggingIn = false;
+
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             document.getElementById('currentUser').textContent = alias;
@@ -170,6 +177,10 @@ function submitPasswordOrCreate(alias) {
                             createdAt: new Date().toISOString()
                         }).then(() => {
                             localStorage.setItem('currentUser', alias);
+
+                            // Clear the flag
+                            isLoggingIn = false;
+
                             document.getElementById('loginScreen').style.display = 'none';
                             document.getElementById('mainApp').style.display = 'block';
                             document.getElementById('currentUser').textContent = alias;
@@ -178,6 +189,9 @@ function submitPasswordOrCreate(alias) {
                     })
                     .catch((createError) => {
                         console.error('Account creation error:', createError);
+
+                        // Clear the flag
+                        isLoggingIn = false;
 
                         // If email already exists, it means wrong password
                         if (createError.code === 'auth/email-already-in-use') {
@@ -194,6 +208,10 @@ function submitPasswordOrCreate(alias) {
                        loginError.code === 'auth/invalid-login-credentials') {
                 // Explicitly wrong password for existing user
                 console.log('Wrong password');
+
+                // Clear the flag
+                isLoggingIn = false;
+
                 alert('Incorrect password. Please try again.');
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Continue';
@@ -202,12 +220,17 @@ function submitPasswordOrCreate(alias) {
             } else {
                 // Other errors
                 console.error('Other authentication error:', loginError);
+
+                // Clear the flag
+                isLoggingIn = false;
+
                 alert('Authentication error: ' + loginError.message);
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Continue';
             }
         });
 }
+
 // Show password login form
 function showPasswordLogin(alias) {
     const loginScreen = document.getElementById('loginScreen');
@@ -334,6 +357,8 @@ function logout() {
         location.reload();
     }
 }
+// Track if we're in the middle of a login attempt
+let isLoggingIn = false;
 
 // Check authentication on page load
 window.addEventListener('DOMContentLoaded', () => {
@@ -345,6 +370,12 @@ window.addEventListener('DOMContentLoaded', () => {
             firebase.auth().onAuthStateChanged((user) => {
                 console.log('Auth state changed:', user ? user.email : 'No user');
 
+                // Don't interfere if we're actively logging in
+                if (isLoggingIn) {
+                    console.log('Login in progress, skipping auto-restore');
+                    return;
+                }
+
                 if (user) {
                     // User is authenticated
                     const storedAlias = Auth.getCurrentUser();
@@ -354,21 +385,20 @@ window.addEventListener('DOMContentLoaded', () => {
                         document.getElementById('mainApp').style.display = 'block';
                         document.getElementById('currentUser').textContent = storedAlias;
 
-                        // CRITICAL: Wait for auth token to propagate to database
+                        // Wait for auth token to propagate to database
                         setTimeout(() => {
                             console.log('Loading app data...');
                             initializeApp();
-                        }, 500); // Increased delay to 500ms
-                    } else {
-                        // User authenticated but no alias stored - logout
-                        firebase.auth().signOut();
+                        }, 500);
                     }
                 } else {
-                    // No user authenticated - show login screen
-                    console.log('No authenticated user, showing login screen');
-                    document.getElementById('loginScreen').style.display = 'block';
-                    document.getElementById('mainApp').style.display = 'none';
-                    localStorage.removeItem('currentUser');
+                    // Only show login screen if we're not in the middle of logging in
+                    if (!isLoggingIn) {
+                        console.log('No authenticated user, showing login screen');
+                        document.getElementById('loginScreen').style.display = 'block';
+                        document.getElementById('mainApp').style.display = 'none';
+                        localStorage.removeItem('currentUser');
+                    }
                 }
             });
         }
