@@ -13,7 +13,7 @@ body {
 
 /* Login Screen */
 .login-screen {
-    display: flex !important;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -28,6 +28,11 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     z-index: 1000;
     margin: 0;
+}
+
+/* Hidden state for login screen */
+.login-screen[style*="display: none"] {
+    display: none !important;
 }
 
 .login-screen h1 {
