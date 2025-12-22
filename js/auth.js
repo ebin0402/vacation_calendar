@@ -48,19 +48,24 @@ function login() {
     const alias = document.getElementById('aliasInput').value;
 
     if (!Auth.login(alias)) {
-        return; // Validation failed
+        return;
     }
 
-    // Show loading state
     const loginBtn = document.querySelector('#loginScreen button');
     loginBtn.disabled = true;
     loginBtn.textContent = 'Logging in...';
 
-    // Sign in anonymously to Firebase for database access
+    // Check if database is ready
+    if (typeof database === 'undefined') {
+        console.error('Database not initialized yet, waiting...');
+        setTimeout(() => login(), 100); // Retry after 100ms
+        return;
+    }
+
+    // Sign in anonymously to Firebase
     firebase.auth().signInAnonymously()
         .then(() => {
             console.log('Firebase auth successful');
-            // Authentication successful, show main app
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             document.getElementById('currentUser').textContent = alias;
