@@ -150,8 +150,10 @@ function submitPasswordOrCreate(alias) {
             initializeApp();
         })
         .catch((error) => {
+            console.log('Auth error code:', error.code);
+
             // If user doesn't exist, create account
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
                 loginBtn.textContent = 'Creating account...';
 
                 firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -174,11 +176,15 @@ function submitPasswordOrCreate(alias) {
                         loginBtn.disabled = false;
                         loginBtn.textContent = 'Continue';
                     });
-            } else if (error.code === 'auth/wrong-password') {
+            } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                // Wrong password for existing user
                 alert('Incorrect password. Please try again.');
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Continue';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
             } else {
+                // Other authentication errors
                 alert('Authentication error: ' + error.message);
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Continue';
