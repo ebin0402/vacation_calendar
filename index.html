@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏖️ ARTS EU Team Vacation Calendar</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <h1>Please enter your Amazon alias to continue</h1>
+        <div class="login-form">
+            <div class="form-group">
+                <label>Amazon Alias</label>
+                <input type="text" id="aliasInput" placeholder="Enter your alias">
+            </div>
+            <button onclick="login()" class="btn-primary">Login</button>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="main-app" style="display: none;">
+        <!-- Header -->
+        <div class="header">
+            <div class="user-info">
+                Logged in as: <span id="currentUser"></span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </div>
+
+        <!-- Title Section -->
+        <div class="title-section">
+            <h1>🏖️ ARTS EU Team Vacation Calendar</h1>
+            <p>Track and manage team vacations</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totalVacations">0</div>
+                <div class="stat-label">Total Vacations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalDays">0</div>
+                <div class="stat-label">Total Days Off</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="currentlyOff">0</div>
+                <div class="stat-label">Currently Off</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('home')">📋 Home</button>
+            <button class="tab-btn" onclick="showTab('tse')">📅 TSE Calendar</button>
+            <button class="tab-btn" onclick="showTab('pse')">📅 PSE Calendar</button>
+            <button class="tab-btn" onclick="showTab('manager')">📅 Manager Calendar</button>
+        </div>
+
+        <!-- Home Tab Content -->
+        <div id="homeTab" class="tab-content active">
+            <!-- Add Vacation Form -->
+            <div class="section">
+                <h2>➕ Add New Vacation</h2>
+                <form id="vacationForm" onsubmit="addVacation(event)">
+                    <div class="form-group">
+                        <label>Team Member Name</label>
+                        <input type="text" id="memberName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="memberRole" required>
+                            <option value="">Select role</option>
+                            <option value="TSE">TSE</option>
+                            <option value="PSE">PSE</option>
+                            <option value="Manager">Manager</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Leave Type</label>
+                        <select id="leaveType" required>
+                            <option value="">Select leave type</option>
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="Sick Leave">Sick Leave</option>
+                            <option value="Comp-Off">Comp-Off</option>
+                            <option value="Paternal Leave">Paternal Leave</option>
+                            <option value="Maternity Leave">Maternity Leave</option>
+                            <option value="Bereavement Leave">Bereavement Leave</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" id="endDate" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Add Vacation</button>
+                </form>
+            </div>
+
+            <!-- Download Section -->
+            <div class="section">
+                <h2>📥 Download Vacation Data</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="downloadStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="downloadEndDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="downloadRole">
+                        <option value="">All Roles</option>
+                        <option value="TSE">TSE</option>
+                        <option value="PSE">PSE</option>
+                        <option value="Manager">Manager</option>
+                    </select>
+                </div>
+                <button onclick="downloadCSV()" class="btn-primary">Download CSV</button>
+            </div>
+
+            <!-- Vacation Schedule -->
+            <div class="section collapsible">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>📅 Current Vacation Schedule</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div id="vacationList" class="vacation-list">
+                        <div class="empty-state">
+                            <p>No vacations scheduled yet</p>
+                            <p>Add your first vacation using the form above</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="section collapsible">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>📝 Notes & Documentation</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="editor-toolbar">
+                        <button onclick="formatText('bold')">B</button>
+                        <button onclick="formatText('italic')">I</button>
+                        <button onclick="formatText('underline')">U</button>
+                        <button onclick="formatText('strikeThrough')">S</button>
+                        <span class="separator">|</span>
+                        <button onclick="formatText('formatBlock', 'h1')">H1</button>
+                        <button onclick="formatText('formatBlock', 'h2')">H2</button>
+                        <button onclick="formatText('formatBlock', 'h3')">H3</button>
+                        <button onclick="formatText('formatBlock', 'p')">P</button>
+                        <span class="separator">|</span>
+                        <button onclick="formatText('insertUnorderedList')">• List</button>
+                        <button onclick="formatText('insertOrderedList')">1. List</button>
+                        <span class="separator">|</span>
+                        <button onclick="insertTable()">📊 Table</button>
+                        <button onclick="formatText('justifyLeft')">⬅</button>
+                        <button onclick="formatText('justifyCenter')">↔</button>
+                        <button onclick="formatText('justifyRight')">➡</button>
+                        <span class="separator">|</span>
+                        <button onclick="clearNotes()">🗑️ Clear</button>
+                    </div>
+                    <div id="notesEditor" contenteditable="true" class="notes-editor"></div>
+                    <div id="saveStatus" class="save-status"></div>
+                </div>
+            </div>
+
+            <!-- Change Log -->
+            <div class="section collapsible">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>📝 Change Log</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="filter-section">
+                        <h3>Filter Change Logs</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>From Date</label>
+                                <input type="date" id="logFromDate">
+                            </div>
+                            <div class="form-group">
+                                <label>To Date</label>
+                                <input type="date" id="logToDate">
+                            </div>
+                        </div>
+                        <button onclick="applyLogFilter()" class="btn-primary">Apply Filter</button>
+                        <button onclick="clearLogFilter()" class="btn-secondary">Clear Filter</button>
+                    </div>
+                    <div id="changeLog" class="change-log">
+                        <div class="empty-state">
+                            <p>No changes recorded yet</p>
+                            <p>Changes will appear here when vacations are added or removed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Tabs -->
+        <div id="tseTab" class="tab-content calendar-tab">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button onclick="previousMonth('tse')" class="btn-nav">← Previous</button>
+                    <h2 id="tseMonthYear"></h2>
+                    <button onclick="nextMonth('tse')" class="btn-nav">Next →</button>
+                </div>
+                <div id="tseCalendar" class="calendar"></div>
+                <div class="legend">
+                    <h3>Legend:</h3>
+                    <div class="legend-items">
+                        <div class="legend-item"><span class="legend-color" style="background: #ffd700;"></span> Today</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #4ecdc4;"></span> Annual Leave</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #ff6b6b;"></span> Sick Leave</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #95e1d3;"></span> Comp-Off</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span> Paternal</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #e91e63;"></span> Maternity</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #34495e;"></span> Bereavement</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #95a5a6;"></span> Other</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pseTab" class="tab-content calendar-tab">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button onclick="previousMonth('pse')" class="btn-nav">← Previous</button>
+                    <h2 id="pseMonthYear"></h2>
+                    <button onclick="nextMonth('pse')" class="btn-nav">Next →</button>
+                </div>
+                <div id="pseCalendar" class="calendar"></div>
+                <div class="legend">
+                    <h3>Legend:</h3>
+                    <div class="legend-items">
+                        <div class="legend-item"><span class="legend-color" style="background: #ffd700;"></span> Today</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #4ecdc4;"></span> Annual Leave</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #ff6b6b;"></span> Sick Leave</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #95e1d3;"></span> Comp-Off</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span> Paternal</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #e91e63;"></span> Maternity</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #34495e;"></span> Bereavement</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #95a5a6;"></span> Other</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="managerTab" class="tab-content calendar-tab">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button onclick="previousMonth('manager')" class="btn-nav">← Previous</button>
+                    <h2 id="managerMonthYear"></h2>
+                    <button onclick="nextMonth('manager')" class="btn-nav">Next →</button>
+                </div>
+                <div id="managerCalendar" class="calendar"></div>
+                <div class="legend">
+                    <h3>Legend:</h3>
+                    <div class="legend-items">
+                        <div class="legend-item"><span class="legend-color" style="background: #ffd700;"></span> Today</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #4ecdc4;"></span> Annual Leave</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #ff6b6b;"></span> Sick Leave</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #95e1d3;"></span> Comp-Off</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span> Paternal</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #e91e63;"></span> Maternity</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #34495e;"></span> Bereavement</div>
+                        <div class="legend-item"><span class="legend-color" style="background: #95a5a6;"></span> Other</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Firebase SDK (add these FIRST) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <!-- Your app scripts (in this order) -->
+    <script src="js/firebase-init.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
