@@ -338,20 +338,35 @@ function logout() {
 // Check authentication on page load
 window.addEventListener('DOMContentLoaded', () => {
     const checkDatabase = setInterval(() => {
-        if (typeof database !== 'undefined') {
+        if (typeof database !== 'undefined' && typeof firebase !== 'undefined') {
             clearInterval(checkDatabase);
 
-            // Wait for Firebase Auth to be ready
+            // Wait for Firebase Auth to initialize and restore session
             firebase.auth().onAuthStateChanged((user) => {
-                if (user && Auth.isLoggedIn()) {
-                    console.log('User authenticated on page load:', user.email);
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('mainApp').style.display = 'block';
-                    document.getElementById('currentUser').textContent = Auth.getCurrentUser();
-                    initializeApp();
+                console.log('Auth state changed:', user ? user.email : 'No user');
+
+                if (user) {
+                    // User is authenticated
+                    const storedAlias = Auth.getCurrentUser();
+                    if (storedAlias) {
+                        console.log('Restoring session for:', storedAlias);
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('mainApp').style.display = 'block';
+                        document.getElementById('currentUser').textContent = storedAlias;
+
+                        // Wait a bit more to ensure auth is fully ready
+                        setTimeout(() => {
+                            initializeApp();
+                        }, 100);
+                    } else {
+                        // User authenticated but no alias stored - logout
+                        firebase.auth().signOut();
+                    }
                 } else {
-                    console.log('No authenticated user on page load');
-                    // Clear any stale localStorage
+                    // No user authenticated - show login screen
+                    console.log('No authenticated user, showing login screen');
+                    document.getElementById('loginScreen').style.display = 'block';
+                    document.getElementById('mainApp').style.display = 'none';
                     localStorage.removeItem('currentUser');
                 }
             });
