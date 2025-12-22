@@ -542,6 +542,16 @@ body {
     background: #ffd700;
     font-weight: bold;
 }
+.calendar-day.today {
+    background: #ffd700;
+    font-weight: bold;
+}
+
+/* Keep yellow background for today even with vacations */
+.calendar-day.today.has-vacation {
+    background: #ffd700 !important;
+    font-weight: bold;
+}
 
 .calendar-day.has-vacation {
     background: #e8f5e9;
