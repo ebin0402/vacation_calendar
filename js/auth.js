@@ -341,12 +341,18 @@ window.addEventListener('DOMContentLoaded', () => {
         if (typeof database !== 'undefined') {
             clearInterval(checkDatabase);
 
+            // Wait for Firebase Auth to be ready
             firebase.auth().onAuthStateChanged((user) => {
                 if (user && Auth.isLoggedIn()) {
+                    console.log('User authenticated on page load:', user.email);
                     document.getElementById('loginScreen').style.display = 'none';
                     document.getElementById('mainApp').style.display = 'block';
                     document.getElementById('currentUser').textContent = Auth.getCurrentUser();
                     initializeApp();
+                } else {
+                    console.log('No authenticated user on page load');
+                    // Clear any stale localStorage
+                    localStorage.removeItem('currentUser');
                 }
             });
         }
