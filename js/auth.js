@@ -135,42 +135,28 @@ function submitPasswordOrCreate(alias) {
 
     const loginBtn = document.querySelector('#loginScreen button');
     loginBtn.disabled = true;
-    loginBtn.textContent = 'Checking...';
+    loginBtn.textContent = 'Logging in...';
 
     const email = alias + '@arts-eu-vacation.internal';
 
-    // First, check if the email exists
-    firebase.auth().fetchSignInMethodsForEmail(email)
-        .then((signInMethods) => {
-            console.log('Sign-in methods for', email, ':', signInMethods);
-            console.log('Sign-in methods length:', signInMethods.length);
-            console.log('User exists:', signInMethods.length > 0);
+    // Always try to login first
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Login successful
+            console.log('Login successful');
+            localStorage.setItem('currentUser', alias);
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('currentUser').textContent = alias;
+            initializeApp();
+        })
+        .catch((loginError) => {
+            console.log('Login error code:', loginError.code);
+            console.log('Login error message:', loginError.message);
 
-            if (signInMethods && signInMethods.length > 0) {
-                // User EXISTS - try to sign in
-                console.log('User exists, attempting login');
-                loginBtn.textContent = 'Logging in...';
-
-                firebase.auth().signInWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        console.log('Login successful');
-                        localStorage.setItem('currentUser', alias);
-                        document.getElementById('loginScreen').style.display = 'none';
-                        document.getElementById('mainApp').style.display = 'block';
-                        document.getElementById('currentUser').textContent = alias;
-                        initializeApp();
-                    })
-                    .catch((error) => {
-                        console.error('Login error:', error);
-                        alert('Incorrect password. Please try again.');
-                        loginBtn.disabled = false;
-                        loginBtn.textContent = 'Continue';
-                        document.getElementById('passwordInput').value = '';
-                        document.getElementById('passwordInput').focus();
-                    });
-            } else {
-                // User DOESN'T EXIST - create new account
-                console.log('User does not exist, creating account');
+            // Only create account if user truly doesn't exist
+            if (loginError.code === 'auth/user-not-found') {
+                console.log('User not found, creating new account');
                 loginBtn.textContent = 'Creating account...';
 
                 firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -195,13 +181,23 @@ function submitPasswordOrCreate(alias) {
                         loginBtn.disabled = false;
                         loginBtn.textContent = 'Continue';
                     });
+            } else if (loginError.code === 'auth/wrong-password' ||
+                       loginError.code === 'auth/invalid-credential' ||
+                       loginError.code === 'auth/invalid-login-credentials') {
+                // Wrong password
+                console.log('Wrong password');
+                alert('Incorrect password. Please try again.');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Continue';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            } else {
+                // Other errors
+                console.error('Other authentication error:', loginError);
+                alert('Authentication error: ' + loginError.message);
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Continue';
             }
-        })
-        .catch((error) => {
-            console.error('Error checking email:', error);
-            alert('Error checking account: ' + error.message);
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'Continue';
         });
 }
 
