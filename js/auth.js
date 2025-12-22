@@ -93,18 +93,97 @@ function login() {
         return;
     }
 
-    // Check if user exists
-    Auth.checkUserExists(trimmedAlias, (exists) => {
-        if (exists) {
-            // User exists, show password login
-            showPasswordLogin(trimmedAlias);
-        } else {
-            // First time user, show password setup
-            showPasswordSetup(trimmedAlias);
-        }
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Login';
-    });
+    // Show password input immediately
+    showPasswordInput(trimmedAlias);
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Login';
+}
+
+// Show password input (works for both new and existing users)
+function showPasswordInput(alias) {
+    const loginScreen = document.getElementById('loginScreen');
+    loginScreen.innerHTML = `
+        <h1>Welcome, ${alias}!</h1>
+        <div class="login-form">
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="passwordInput" placeholder="Enter your password">
+            </div>
+            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                First time? Just enter a new password (min 6 characters)
+            </p>
+            <button onclick="submitPasswordOrCreate('${alias}')" class="btn-primary">Continue</button>
+            <button onclick="backToAliasInput()" class="btn-secondary" style="margin-top: 10px;">Back</button>
+        </div>
+    `;
+    document.getElementById('passwordInput').focus();
+}
+
+// Try to login, if user doesn't exist, create account
+function submitPasswordOrCreate(alias) {
+    const password = document.getElementById('passwordInput').value;
+
+    if (!password) {
+        alert('Please enter a password');
+        return;
+    }
+
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+    }
+
+    const loginBtn = document.querySelector('#loginScreen button');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Logging in...';
+
+    const email = alias + '@arts-eu-vacation.internal';
+
+    // Try to sign in first
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Login successful
+            localStorage.setItem('currentUser', alias);
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('currentUser').textContent = alias;
+            initializeApp();
+        })
+        .catch((error) => {
+            // If user doesn't exist, create account
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                loginBtn.textContent = 'Creating account...';
+
+                firebase.auth().createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Store user info in database
+                        database.ref('users/' + alias).set({
+                            alias: alias,
+                            email: email,
+                            createdAt: new Date().toISOString()
+                        }).then(() => {
+                            localStorage.setItem('currentUser', alias);
+                            document.getElementById('loginScreen').style.display = 'none';
+                            document.getElementById('mainApp').style.display = 'block';
+                            document.getElementById('currentUser').textContent = alias;
+                            initializeApp();
+                        });
+                    })
+                    .catch((createError) => {
+                        alert('Account creation failed: ' + createError.message);
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Continue';
+                    });
+            } else if (error.code === 'auth/wrong-password') {
+                alert('Incorrect password. Please try again.');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Continue';
+            } else {
+                alert('Authentication error: ' + error.message);
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Continue';
+            }
+        });
 }
 
 // Show password login form
