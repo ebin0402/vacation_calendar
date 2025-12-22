@@ -9,6 +9,9 @@ const firebaseConfig = {
   appId: "1:531028738404:web:5366ec2b408b0d7e863a71"
 };
 
+// Declare database as a global variable (accessible to all other JS files)
+let database;
+
 // Wait for Firebase to be available
 if (typeof firebase === 'undefined') {
   console.error('Firebase SDK not loaded! Check if Firebase scripts are loading correctly.');
@@ -21,8 +24,8 @@ if (typeof firebase === 'undefined') {
     firebase.initializeApp(firebaseConfig);
     console.log('Firebase initialized successfully');
 
-    // Get database reference
-    const database = firebase.database();
+    // Initialize the global database reference
+    database = firebase.database();
     console.log('Database reference created successfully');
     
     // Test database connection
