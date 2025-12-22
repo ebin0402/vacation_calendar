@@ -154,8 +154,9 @@ function submitPasswordOrCreate(alias) {
             console.log('Login error code:', loginError.code);
             console.log('Login error message:', loginError.message);
 
-            // Only create account if user truly doesn't exist
-            if (loginError.code === 'auth/user-not-found') {
+            // Create account if user doesn't exist
+            if (loginError.code === 'auth/user-not-found' ||
+                loginError.code === 'auth/invalid-credential') {
                 console.log('User not found, creating new account');
                 loginBtn.textContent = 'Creating account...';
 
@@ -177,14 +178,21 @@ function submitPasswordOrCreate(alias) {
                     })
                     .catch((createError) => {
                         console.error('Account creation error:', createError);
-                        alert('Account creation failed: ' + createError.message);
+
+                        // If email already exists, it means wrong password
+                        if (createError.code === 'auth/email-already-in-use') {
+                            alert('Incorrect password. Please try again.');
+                            document.getElementById('passwordInput').value = '';
+                            document.getElementById('passwordInput').focus();
+                        } else {
+                            alert('Account creation failed: ' + createError.message);
+                        }
                         loginBtn.disabled = false;
                         loginBtn.textContent = 'Continue';
                     });
             } else if (loginError.code === 'auth/wrong-password' ||
-                       loginError.code === 'auth/invalid-credential' ||
                        loginError.code === 'auth/invalid-login-credentials') {
-                // Wrong password
+                // Explicitly wrong password for existing user
                 console.log('Wrong password');
                 alert('Incorrect password. Please try again.');
                 loginBtn.disabled = false;
@@ -200,7 +208,6 @@ function submitPasswordOrCreate(alias) {
             }
         });
 }
-
 // Show password login form
 function showPasswordLogin(alias) {
     const loginScreen = document.getElementById('loginScreen');
