@@ -1,4 +1,3 @@
-
 * {
     margin: 0;
     padding: 0;
@@ -18,13 +17,28 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
+    min-height: 100vh;
     color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: 1000;
 }
 
 .login-screen h1 {
     margin-bottom: 30px;
     font-size: 2em;
+    text-align: center;
+}
+
+.login-screen p {
+    text-align: center;
+    margin-bottom: 20px;
+    color: white;
 }
 
 .login-form {
@@ -33,7 +47,34 @@ body {
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     min-width: 400px;
+    max-width: 400px;
 }
+
+.login-form .form-group {
+    margin-bottom: 20px;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.login-form button {
+    width: 100%;
+    margin-top: 10px;
+}
+
 .btn-secondary {
     background: #95a5a6;
     color: white;
@@ -462,12 +503,23 @@ body {
 
 .calendar-day {
     aspect-ratio: 1;
-    padding: 10px;
+    padding: 5px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     text-align: center;
     position: relative;
     cursor: pointer;
+    overflow-y: auto;
+    min-height: 80px;
+}
+
+.calendar-day::-webkit-scrollbar {
+    width: 4px;
+}
+
+.calendar-day::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 2px;
 }
 
 .calendar-day.header {
@@ -530,26 +582,6 @@ body {
     border-radius: 4px;
     display: inline-block;
 }
-.calendar-day {
-    aspect-ratio: 1;
-    padding: 5px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    text-align: center;
-    position: relative;
-    cursor: pointer;
-    overflow-y: auto;
-    min-height: 80px; /* Ensure enough space for names */
-}
-
-.calendar-day::-webkit-scrollbar {
-    width: 4px;
-}
-
-.calendar-day::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 2px;
-}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -573,6 +605,10 @@ body {
     .login-form {
         min-width: auto;
         width: 100%;
+        max-width: 100%;
+    }
+    
+    .login-screen {
+        padding: 10px;
     }
 }
-
