@@ -35,23 +35,17 @@ function renderCalendar(role) {
         for (let i = firstDayOfWeek - 1; i >= 0; i--) {
             const day = prevLastDay.getDate() - i;
             html += `<div class="calendar-day other-month">${day}</div>`;
-        });
-
-        // Get today's date for comparison (normalized to midnight)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        }
 
         // Current month days
+        const today = new Date();
+
         for (let day = 1; day <= lastDay.getDate(); day++) {
             const currentDate = new Date(state.year, state.month, day);
-            currentDate.setHours(0, 0, 0, 0); // Normalize to midnight for accurate comparison
-
             const dateStr = currentDate.toISOString().split('T');
 
             let classes = 'calendar-day';
-
-            // Check if this is today by comparing timestamps
-            if (currentDate.getTime() === today.getTime()) {
+            if (currentDate.toDateString() === today.toDateString()) {
                 classes += ' today';
             }
 
@@ -59,8 +53,6 @@ function renderCalendar(role) {
             const dayVacations = (vacations || []).filter(v => {
                 const start = new Date(v.startDate);
                 const end = new Date(v.endDate);
-                start.setHours(0, 0, 0, 0);
-                end.setHours(0, 0, 0, 0);
                 return currentDate >= start && currentDate <= end;
             });
 
