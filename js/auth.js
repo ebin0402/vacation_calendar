@@ -93,19 +93,25 @@ function logout() {
 
 // Check authentication on page load
 window.addEventListener('DOMContentLoaded', () => {
-    if (Auth.isLoggedIn()) {
-        // Sign in to Firebase first
-        firebase.auth().signInAnonymously()
-            .then(() => {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                document.getElementById('currentUser').textContent = Auth.getCurrentUser();
-                initializeApp();
-            })
-            .catch((error) => {
-                console.error('Auto-login failed:', error);
-                localStorage.removeItem('currentUser');
-                location.reload();
-            });
-    }
+    // Wait for database to be initialized
+    const checkDatabase = setInterval(() => {
+        if (typeof database !== 'undefined') {
+            clearInterval(checkDatabase);
+
+            if (Auth.isLoggedIn()) {
+                firebase.auth().signInAnonymously()
+                    .then(() => {
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('mainApp').style.display = 'block';
+                        document.getElementById('currentUser').textContent = Auth.getCurrentUser();
+                        initializeApp();
+                    })
+                    .catch((error) => {
+                        console.error('Auto-login failed:', error);
+                        localStorage.removeItem('currentUser');
+                        location.reload();
+                    });
+            }
+        }
+    }, 50); // Check every 50ms
 });
