@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏖️ ARTS EU Team Vacation Calendar</title>
     <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Firebase SDK with defer -->
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <!-- Your app scripts with defer -->
+    <script defer src="js/firebase-init.js"></script>
+    <script defer src="js/config.js"></script>
+    <script defer src="js/storage.js"></script>
+    <script defer src="js/auth.js"></script>
+    <script defer src="js/calendar.js"></script>
+    <script defer src="js/app.js"></script>
 </head>
 <body>
     <!-- Login Screen -->
@@ -285,17 +297,5 @@
             </div>
         </div>
     </div>
-    <!-- Firebase SDK (add these FIRST) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <!-- Your app scripts (in this order) -->
-    <script src="js/firebase-init.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/calendar.js"></script>
-    <script src="js/app.js"></script>
 </body>
 </html>
-
