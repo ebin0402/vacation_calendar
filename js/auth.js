@@ -151,9 +151,14 @@ function submitPasswordOrCreate(alias) {
         })
         .catch((error) => {
             console.log('Auth error code:', error.code);
+            console.log('Auth error message:', error.message);
 
             // If user doesn't exist, create account
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+            // Firebase returns different error codes depending on the situation
+            if (error.code === 'auth/user-not-found' ||
+                error.code === 'auth/invalid-email' ||
+                error.code === 'auth/invalid-credential') {
+
                 loginBtn.textContent = 'Creating account...';
 
                 firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -172,12 +177,23 @@ function submitPasswordOrCreate(alias) {
                         });
                     })
                     .catch((createError) => {
-                        alert('Account creation failed: ' + createError.message);
-                        loginBtn.disabled = false;
-                        loginBtn.textContent = 'Continue';
+                        console.log('Create error code:', createError.code);
+
+                        // If account already exists, it means wrong password
+                        if (createError.code === 'auth/email-already-in-use') {
+                            alert('Incorrect password. Please try again.');
+                            loginBtn.disabled = false;
+                            loginBtn.textContent = 'Continue';
+                            document.getElementById('passwordInput').value = '';
+                            document.getElementById('passwordInput').focus();
+                        } else {
+                            alert('Account creation failed: ' + createError.message);
+                            loginBtn.disabled = false;
+                            loginBtn.textContent = 'Continue';
+                        }
                     });
-            } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                // Wrong password for existing user
+            } else if (error.code === 'auth/wrong-password') {
+                // Explicitly wrong password for existing user
                 alert('Incorrect password. Please try again.');
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Continue';
