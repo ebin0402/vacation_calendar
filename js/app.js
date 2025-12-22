@@ -279,9 +279,13 @@ function toggleSection(header) {
     section.classList.toggle('collapsed');
 }
 
+// Load notes from Firebase
 function loadNotes() {
-    Storage.getNotes((notes) => {
-        document.getElementById('notesEditor').innerHTML = notes;
+    database.ref('notes').once('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.content) {
+            document.getElementById('notesEditor').innerHTML = data.content;
+        }
     });
 }
 
@@ -310,15 +314,37 @@ function insertTable() {
     saveNotes();
 }
 
+// Save notes to Firebase
 function saveNotes() {
-    const notes = document.getElementById('notesEditor').innerHTML;
-    Storage.saveNotes(notes);
-    
-    const status = document.getElementById('saveStatus');
-    status.textContent = 'Saved';
-    setTimeout(() => {
-        status.textContent = '';
-    }, 2000);
+    const content = document.getElementById('notesEditor').innerHTML;
+    const currentUser = Auth.getCurrentUser();
+    const saveStatus = document.getElementById('saveStatus');
+
+    // Show saving status
+    if (saveStatus) {
+        saveStatus.textContent = 'Saving...';
+        saveStatus.style.color = '#95a5a6';
+    }
+
+    database.ref('notes').set({
+        content: content,
+        lastModified: new Date().toISOString(),
+        modifiedBy: currentUser
+    }).then(() => {
+        if (saveStatus) {
+            saveStatus.textContent = '✓ Saved';
+            saveStatus.style.color = '#27ae60';
+            setTimeout(() => {
+                saveStatus.textContent = '';
+            }, 2000);
+        }
+    }).catch((error) => {
+        console.error('Error saving notes:', error);
+        if (saveStatus) {
+            saveStatus.textContent = '✗ Error saving';
+            saveStatus.style.color = '#e74c3c';
+        }
+    });
 }
 
 function clearNotes() {
@@ -417,4 +443,3 @@ function clearLogFilter() {
     document.getElementById('logToDate').value = '';
     renderChangeLogs();
 }
-
