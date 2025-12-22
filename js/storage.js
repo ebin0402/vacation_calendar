@@ -56,11 +56,13 @@ const Storage = {
     },
 
     // Get vacations by role
-    getVacationsByRole(role, callback) {
-        this.getVacations((vacations) => {
-            callback(vacations.filter(v => v.role === role));
-        });
-    },
+getVacationsByRole(role, callback) {
+    this.getVacations((vacations) => {
+        callback((vacations || []).filter(v =>
+            v.role.toUpperCase() === role.toUpperCase()
+        ));
+    });
+},
 
     // Get vacations for date range
     getVacationsInRange(startDate, endDate, role, callback) {
