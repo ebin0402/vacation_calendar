@@ -79,9 +79,7 @@ function login() {
 
     // Validate against allowed aliases
     if (!Auth.allowedAliases.includes(trimmedAlias)) {
-        alert('Access denied. You are not authorized to use this application.
-
-Please contact the team administrator if you need access.');
+        alert('Access denied. You are not authorized to use this application. Please contact the team administrator if you need access.');
         return;
     }
 
