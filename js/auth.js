@@ -109,8 +109,8 @@ function showPasswordInput(alias) {
                 <label>Password</label>
                 <input type="password" id="passwordInput" placeholder="Enter your password">
             </div>
-            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-                First time? Just enter a new password (min 6 characters)
+            <p style="font-size: 0.9em; color: #666; margin-top: 10px; line-height: 1.4;">
+                If you are a first time user, create a new password (minimum 6 characters)
             </p>
             <p style="font-size: 0.95em; color: #e74c3c; font-weight: bold; margin-top: 10px;">
                 ⚠️ Do not use your Amazon password!!
