@@ -112,6 +112,9 @@ function showPasswordInput(alias) {
             <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
                 First time? Just enter a new password (min 6 characters)
             </p>
+            <p style="font-size: 0.95em; color: #e74c3c; font-weight: bold; margin-top: 10px;">
+                ⚠️ Do not use your Amazon password!!
+            </p>
             <button onclick="submitPasswordOrCreate('${alias}')" class="btn-primary">Continue</button>
             <button onclick="backToAliasInput()" class="btn-secondary" style="margin-top: 10px;">Back</button>
         </div>
