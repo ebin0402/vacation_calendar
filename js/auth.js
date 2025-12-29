@@ -119,7 +119,18 @@ function showPasswordInput(alias) {
             <button onclick="backToAliasInput()" class="btn-secondary" style="margin-top: 10px;">Back</button>
         </div>
     `;
-    document.getElementById('passwordInput').focus();
+    
+    // Focus on password input
+    const passwordInput = document.getElementById('passwordInput');
+    passwordInput.focus();
+    
+    // Add Enter key listener
+    passwordInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            submitPasswordOrCreate('${alias}');
+        }
+    });
 }
 
 // Try to login, if user doesn't exist, create account
