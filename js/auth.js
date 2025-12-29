@@ -362,7 +362,18 @@ function backToAliasInput() {
             <button onclick="login()" class="btn-primary">Login</button>
         </div>
     `;
-    document.getElementById('aliasInput').focus();
+    
+    // Focus on alias input
+    const aliasInput = document.getElementById('aliasInput');
+    aliasInput.focus();
+    
+    // Add Enter key listener
+    aliasInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            login();
+        }
+    });
 }
 
 // Logout function
