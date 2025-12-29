@@ -99,6 +99,7 @@ function login() {
     loginBtn.textContent = 'Login';
 }
 
+
 // Show password input (works for both new and existing users)
 function showPasswordInput(alias) {
     const loginScreen = document.getElementById('loginScreen');
@@ -124,11 +125,11 @@ function showPasswordInput(alias) {
     const passwordInput = document.getElementById('passwordInput');
     passwordInput.focus();
     
-    // Add Enter key listener
+    // Add Enter key listener - use alias variable directly, not template literal
     passwordInput.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            submitPasswordOrCreate('${alias}');
+            submitPasswordOrCreate(alias);  // Pass alias variable directly
         }
     });
 }
