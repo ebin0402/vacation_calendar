@@ -350,6 +350,7 @@ function submitNewPassword(alias) {
     });
 }
 
+
 // Back to alias input
 function backToAliasInput() {
     const loginScreen = document.getElementById('loginScreen');
@@ -372,7 +373,7 @@ function backToAliasInput() {
     aliasInput.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            login();
+            login();  // No parameters needed here
         }
     });
 }
